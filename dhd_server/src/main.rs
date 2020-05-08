@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use dhd_server::{
     redis::init_pool,
-    schema::{create_schema, Context, Schema}
+    schema::{create_schema, Context, Schema},
 };
 
 #[rocket::get("/")]
@@ -15,7 +15,7 @@ fn graphiql() -> content::Html<String> {
 
 #[rocket::get("/graphql?<request>")]
 fn get_graphql_handler(
-    ctx: State<Context>,
+    ctx: State<Arc<Context>>,
     request: juniper_rocket::GraphQLRequest,
     schema: State<Arc<Schema>>,
 ) -> juniper_rocket::GraphQLResponse {
@@ -24,9 +24,9 @@ fn get_graphql_handler(
 
 #[rocket::post("/graphql", data = "<request>")]
 fn post_graphql_handler(
-    ctx: State<Context>,
+    ctx: State<Arc<Context>>,
     request: juniper_rocket::GraphQLRequest,
-    schema: State<Schema>,
+    schema: State<Arc<Schema>>,
 ) -> juniper_rocket::GraphQLResponse {
     request.execute(&schema, &ctx)
 }
@@ -34,7 +34,7 @@ fn post_graphql_handler(
 fn main() {
     let pool = init_pool().unwrap();
     let schema = Arc::new(create_schema());
-    let schema_context = Arc::new(pool);
+    let schema_context = Arc::new(Context::new(pool));
 
     rocket::ignite()
         .manage(schema_context.clone())
