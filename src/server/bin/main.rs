@@ -1,8 +1,10 @@
 #![feature(decl_macro, proc_macro_hygiene)]
 
+use dhd::redis::init_pool;
 use rocket::{response::content, State};
+use std::sync::Arc;
 
-use dhd::schema::{create_schema, Schema};
+use dhd::schema::{create_schema, Context, Schema};
 
 #[rocket::get("/")]
 fn graphiql() -> content::Html<String> {
@@ -11,23 +13,30 @@ fn graphiql() -> content::Html<String> {
 
 #[rocket::get("/graphql?<request>")]
 fn get_graphql_handler(
+    ctx: State<Context>,
     request: juniper_rocket::GraphQLRequest,
-    schema: State<Schema>,
+    schema: State<Arc<Schema>>,
 ) -> juniper_rocket::GraphQLResponse {
-    request.execute(&schema, &())
+    request.execute(&schema, &ctx)
 }
 
 #[rocket::post("/graphql", data = "<request>")]
 fn post_graphql_handler(
+    ctx: State<Context>,
     request: juniper_rocket::GraphQLRequest,
     schema: State<Schema>,
 ) -> juniper_rocket::GraphQLResponse {
-    request.execute(&schema, &())
+    request.execute(&schema, &ctx)
 }
 
 fn main() {
+    let pool = init_pool().unwrap();
+    let schema = Arc::new(create_schema());
+    let schema_context = Arc::new(pool);
+
     rocket::ignite()
-        .manage(create_schema())
+        .manage(schema_context.clone())
+        .manage(schema.clone())
         .mount(
             "/",
             rocket::routes![graphiql, get_graphql_handler, post_graphql_handler],

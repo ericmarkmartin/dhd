@@ -1,15 +1,23 @@
-use rocket_contrib::databases::redis::{self, Commands};
+use r2d2_redis::{
+    r2d2::{self, Pool},
+    redis::{self, Commands},
+    RedisConnectionManager,
+};
 
-#[rocket_contrib::database("dhd_db")]
-pub struct DhdDbConn(redis::Connection);
+pub type RedisPool = Pool<RedisConnectionManager>;
 
-pub fn lookup(conn: DhdDbConn, id: String) -> Option<Vec<u32>> {
+pub fn init_pool() -> Result<RedisPool, r2d2::Error> {
+    let manager = RedisConnectionManager::new("redis://127.0.0.1:6379").unwrap();
+    Pool::builder().build(manager)
+}
+
+pub fn lookup(mut conn: redis::Connection, id: String) -> Option<Vec<u32>> {
     match conn.hget("hashlists", &id) {
         Ok(data) => Some(data),
         Err(_) => None,
     }
 }
 
-pub fn insert(conn: DhdDbConn, id: String, hashes: Vec<u32>) -> Result<(), ()> {
+pub fn insert(mut conn: redis::Connection, id: String, hashes: Vec<u32>) -> Result<(), ()> {
     conn.hset("hashlists", &id, hashes).map_err(|_| ())
 }
