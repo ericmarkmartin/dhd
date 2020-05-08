@@ -1,18 +1,6 @@
-[package]
-name = "dhd"
-version = "0.1.0"
-authors = ["Eric Mark Martin <ericmarkmartin@gmail.com>"]
-edition = "2018"
+[workspace]
 
-[lib]
-
-[[bin]]
-name = "server"
-path = "src/server/bin/main.rs"
-
-[dependencies]
-rocket = "0.4.4"
-juniper = "0.14.2"
-juniper_rocket = "0.5.2"
-difference = "2.0.0"
-r2d2_redis = "0.13.0"
+members = [
+    "dhd_server",
+    "dhd_core"
+]

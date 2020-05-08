@@ -150,9 +150,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "dhd"
+name = "dhd_core"
 version = "0.1.0"
 dependencies = [
+ "difference",
+ "juniper",
+]
+
+[[package]]
+name = "dhd_server"
+version = "0.1.0"
+dependencies = [
+ "dhd_core",
  "difference",
  "juniper",
  "juniper_rocket",

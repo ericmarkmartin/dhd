@@ -1,16 +1,14 @@
-use super::redis::RedisPool;
 use difference::Difference;
-use juniper::{EmptyMutation, RootNode};
 
 #[derive(juniper::GraphQLEnum)]
-enum DiffType {
+pub enum DiffType {
     Same,
     Add,
     Rem,
 }
 
 #[derive(juniper::GraphQLObject)]
-struct Diff {
+pub struct Diff {
     diff_type: DiffType,
     data: String,
 }
@@ -35,31 +33,14 @@ impl From<Difference> for Diff {
     }
 }
 
-pub struct Context {
-    pub db: RedisPool,
-}
-
-impl Context {
-    pub fn new(db: RedisPool) -> Self {
-        Self { db }
+impl From<Diff> for Difference {
+    fn from(diff: Diff) -> Self {
+        use DiffType::*;
+        let data = diff.data;
+        match diff.diff_type {
+            Same => Difference::Same(data),
+            Add => Difference::Add(data),
+            Rem => Difference::Rem(data),
+        }
     }
-}
-
-impl juniper::Context for Context {}
-
-pub struct Query;
-
-#[juniper::object(
-    Context = Context
-)]
-impl Query {
-    fn diff_with_hashes() -> Vec<Diff> {
-        vec![]
-    }
-}
-
-pub type Schema = RootNode<'static, Query, EmptyMutation<Context>>;
-
-pub fn create_schema() -> Schema {
-    Schema::new(Query {}, EmptyMutation::new())
 }

@@ -1,10 +1,12 @@
 #![feature(decl_macro, proc_macro_hygiene)]
 
-use dhd::redis::init_pool;
 use rocket::{response::content, State};
 use std::sync::Arc;
 
-use dhd::schema::{create_schema, Context, Schema};
+use dhd_server::{
+    redis::init_pool,
+    schema::{create_schema, Context, Schema}
+};
 
 #[rocket::get("/")]
 fn graphiql() -> content::Html<String> {
