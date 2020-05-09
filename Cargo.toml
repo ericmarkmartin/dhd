@@ -1,6 +1,7 @@
 [workspace]
 
 members = [
+    "dhd_core",
     "dhd_server",
-    "dhd_core"
+    "dhd_client"
 ]

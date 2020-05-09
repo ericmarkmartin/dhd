@@ -150,6 +150,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "dhd_client"
+version = "0.1.0"
+dependencies = [
+ "dhd_core",
+]
+
+[[package]]
 name = "dhd_core"
 version = "0.1.0"
 dependencies = [
