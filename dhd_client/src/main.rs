@@ -1,10 +1,10 @@
-extern crate clap;
 use clap::{Arg, ArgMatches, App, AppSettings, SubCommand};
-use std::fmt;
+use crc::crc16;
+use graphql_client::{GraphQLQuery, Response};
+use reqwest;
 use std::error;
+use std::fmt;
 use std::fs;
-use crc::crc32;
-use dhd_core::hashlist::{Hash, HashList};
 
 #[derive(Debug)]
 struct DhdError {
@@ -29,16 +29,61 @@ impl DhdError {
     }
 }
 
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "graphql/hashlist_schema.json",
+    query_path = "graphql/hashlist_query.graphql",
+    response_derives = "Debug"
+)]
+pub struct HashlistQuery;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "graphql/hashlist_schema.json",
+    query_path = "graphql/hashlist_mutation.graphql",
+    response_derives = "Debug"
+)]
+pub struct HashlistMutation;
+
 fn dhd_push(matches: &ArgMatches) -> Result<(), Box<dyn error::Error>> {
     let server = matches.value_of("server").ok_or(DhdError::new("no server specified"))?;
+    let url = format!("{}/graphql", server);
     let filename = matches.value_of("file").ok_or(DhdError::new("no filename provided"))?;
     let contents = fs::read_to_string(filename)?;
     let lines = contents.split('\n');
-    let hashes: HashList = HashList::from(lines.map(|x| crc32::checksum_ieee(x.as_bytes())).collect::<Vec<Hash>>());
+    let hashlist: Vec<i64> = lines.map(|x| crc16::checksum_x25(x.as_bytes()) as i64).collect();
+
+    let body = HashlistMutation::build_query(hashlist_mutation::Variables { 
+        hashlist: hashlist
+    });
+    let client = reqwest::blocking::Client::new();
+    let res = client.post(&url).json(&body).send()?;
+
+    let response: Response<hashlist_mutation::ResponseData> = res.json()?;
+    let data = response.data.expect("bad response");
+    println!("Created hashlist #{}", data.create_hashlist);
+
     Ok(())
 }
 
-fn dhd_pull(_matches: &ArgMatches) -> Result<(), Box<dyn error::Error>> {
+fn dhd_pull(matches: &ArgMatches) -> Result<(), Box<dyn error::Error>> {
+    let server = matches.value_of("server").ok_or(DhdError::new("no server specified"))?;
+    let url = format!("{}/graphql", server);
+    let id = matches.value_of("id").ok_or(DhdError::new("no id specified"))?;
+
+    let body = HashlistQuery::build_query(hashlist_query::Variables {
+        hashlist_id: id.to_string()
+    });
+    let client = reqwest::blocking::Client::new();
+    let res = client.post(&url).json(&body).send()?;
+
+    let response: Response<hashlist_query::ResponseData> = res.json()?;
+    let data = response.data.expect("bad response");
+    let hashlist = data.get_hashlist;
+    for hash in hashlist {
+        println!("{}", hash);
+    }
+
     Ok(())
 }
 
@@ -60,7 +105,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
                 .value_name("URL")
                 .help("The DHD server to use.")
                 .required(false)
-                .default_value("localhost")))
+                .default_value("http://localhost:8000")))
         .subcommand(SubCommand::with_name("pull")
             .about("Pull a line hash from the server.")
             .arg(Arg::with_name("id")
@@ -73,7 +118,7 @@ fn main() -> Result<(), Box<dyn error::Error>> {
                 .value_name("URL")
                 .help("The DHD server to use.")
                 .required(false)
-                .default_value("localhost")))
+                .default_value("http://localhost:8000")))
         .get_matches();
 
     match matches.subcommand() {

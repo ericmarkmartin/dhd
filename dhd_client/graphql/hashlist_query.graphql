@@ -1,0 +1,3 @@
+query HashlistQuery($hashlist_id: String!){
+  getHashlist(id:$hashlist_id)
+}

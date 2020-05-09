@@ -1,6 +1,6 @@
 use std::{convert::TryFrom, str::FromStr};
 
-pub type Hash = u32;
+pub type Hash = i32;
 pub struct HashList(Vec<Hash>);
 
 impl From<Vec<Hash>> for HashList {

@@ -1,0 +1,3 @@
+mutation HashlistMutation($hashlist:[Int!]!) {
+  createHashlist(hashlist:$hashlist)
+}
