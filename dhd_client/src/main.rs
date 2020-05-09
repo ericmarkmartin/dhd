@@ -2,6 +2,9 @@ extern crate clap;
 use clap::{Arg, ArgMatches, App, AppSettings, SubCommand};
 use std::fmt;
 use std::error;
+use std::fs;
+use crc::crc32;
+use dhd_core::hashlist::{Hash, HashList};
 
 #[derive(Debug)]
 struct DhdError {
@@ -26,8 +29,12 @@ impl DhdError {
     }
 }
 
-fn dhd_push(_matches: &ArgMatches) -> Result<(), Box<dyn error::Error>> {
-    println!("{:?}", _matches);
+fn dhd_push(matches: &ArgMatches) -> Result<(), Box<dyn error::Error>> {
+    let server = matches.value_of("server").ok_or(DhdError::new("no server specified"))?;
+    let filename = matches.value_of("file").ok_or(DhdError::new("no filename provided"))?;
+    let contents = fs::read_to_string(filename)?;
+    let lines = contents.split('\n');
+    let hashes: HashList = HashList::from(lines.map(|x| crc32::checksum_ieee(x.as_bytes())).collect::<Vec<Hash>>());
     Ok(())
 }
 
