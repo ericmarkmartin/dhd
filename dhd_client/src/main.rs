@@ -2,34 +2,9 @@ use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 use crc::crc32;
 use graphql_client::{GraphQLQuery, Response};
 use reqwest;
-use std::error;
-use std::fmt;
+use anyhow::{anyhow, Context, Result};
 use std::fs;
-
-#[derive(Debug)]
-struct DhdError {
-    reason: String,
-}
-
-impl fmt::Display for DhdError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "DHD ran into an error: {}", &self.reason)
-    }
-}
-
-impl error::Error for DhdError {
-    fn description(&self) -> &str {
-        &self.reason
-    }
-}
-
-impl DhdError {
-    pub fn new(reason: &str) -> Self {
-        Self {
-            reason: reason.to_string(),
-        }
-    }
-}
+use dhd_core::hashlist::{Hash, HashList};
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -47,39 +22,41 @@ pub struct HashlistQuery;
 )]
 pub struct HashlistMutation;
 
-fn dhd_push(matches: &ArgMatches) -> Result<(), Box<dyn error::Error>> {
+fn dhd_push(matches: &ArgMatches) -> Result<()> {
     let server = matches
         .value_of("server")
-        .ok_or(DhdError::new("no server specified"))?;
+        .context("no server specified")?;
     let url = format!("{}/graphql", server);
     let filename = matches
         .value_of("file")
-        .ok_or(DhdError::new("no filename provided"))?;
+        .context("no filename provided")?;
     let contents = fs::read_to_string(filename)?;
     let lines = contents.split('\n');
-    let hashlist: Vec<i64> = lines
-        .map(|x| crc32::checksum_ieee(x.as_bytes()) as i64)
-        .collect();
+    let hashlist: HashList = lines
+        .map(|x| crc32::checksum_ieee(x.as_bytes()) as Hash)
+        .collect::<Vec<Hash>>().into();
 
-    let body = HashlistMutation::build_query(hashlist_mutation::Variables { hashlist });
+    let body = HashlistMutation::build_query(hashlist_mutation::Variables { 
+        hashlist: Vec::<i64>::from(hashlist)
+    });
     let client = reqwest::blocking::Client::new();
     let res = client.post(&url).json(&body).send()?;
 
     let response: Response<hashlist_mutation::ResponseData> = res.json()?;
-    let data = response.data.expect("bad response");
+    let data = response.data.context("bad response")?;
     println!("Created hashlist #{}", data.create_hashlist);
 
     Ok(())
 }
 
-fn dhd_pull(matches: &ArgMatches) -> Result<(), Box<dyn error::Error>> {
+fn dhd_pull(matches: &ArgMatches) -> Result<()> {
     let server = matches
         .value_of("server")
-        .ok_or(DhdError::new("no server specified"))?;
+        .context("no server specified")?;
     let url = format!("{}/graphql", server);
     let id = matches
         .value_of("id")
-        .ok_or(DhdError::new("no id specified"))?;
+        .context("no id specified")?;
 
     let body = HashlistQuery::build_query(hashlist_query::Variables {
         hashlist_id: id.to_string(),
@@ -88,7 +65,8 @@ fn dhd_pull(matches: &ArgMatches) -> Result<(), Box<dyn error::Error>> {
     let res = client.post(&url).json(&body).send()?;
 
     let response: Response<hashlist_query::ResponseData> = res.json()?;
-    let data = response.data.expect("bad response");
+    println!("Response: {:?}", response);
+    let data = response.data.context("bad response")?;
     let hashlist = data.get_hashlist;
     for hash in hashlist {
         println!("{}", hash);
@@ -97,7 +75,7 @@ fn dhd_pull(matches: &ArgMatches) -> Result<(), Box<dyn error::Error>> {
     Ok(())
 }
 
-fn main() -> Result<(), Box<dyn error::Error>> {
+fn main() -> Result<()> {
     let matches = App::new("Distributed Hash Diff")
         .version("0.1")
         .about("A networked service for comparing files by line hashes.")
@@ -146,6 +124,6 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     match matches.subcommand() {
         ("push", Some(sub_matches)) => dhd_push(sub_matches),
         ("pull", Some(sub_matches)) => dhd_pull(sub_matches),
-        _ => Err(DhdError::new("Bad subcommand").into()),
+        _ => Err(anyhow!("Bad subcommand")),
     }
 }

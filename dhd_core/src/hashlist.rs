@@ -15,6 +15,12 @@ impl From<HashList> for Vec<Hash> {
     }
 }
 
+impl From<HashList> for Vec<i64> {
+    fn from(hashlist: HashList) -> Self {
+        Vec::<Hash>::from(hashlist).iter().map(|x: &Hash| *x as i64).collect::<Vec<i64>>()
+    }
+}
+
 impl TryFrom<&str> for HashList {
     type Error = <Hash as FromStr>::Err;
 
