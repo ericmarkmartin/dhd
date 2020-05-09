@@ -18,5 +18,5 @@ juniper = "0.14.2"
 juniper_rocket = "0.5.2"
 difference = "2.0.0"
 r2d2_redis = "0.13.0"
-dhd_core = { path = "../dhd_core" }
+dhd_core = { path = "../dhd_core", features = ["graphql"] }
 itertools = "0.9.0"
