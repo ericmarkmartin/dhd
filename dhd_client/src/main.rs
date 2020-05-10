@@ -28,7 +28,7 @@ fn dhd_push(matches: &ArgMatches) -> Result<()> {
     let contents = fs::read_to_string(filename)?;
     let lines = contents.split('\n');
     let hashlist: HashList = lines
-        .map(|x| crc32::checksum_ieee(x.as_bytes()) as Hash)
+        .map(|x| crc32::checksum_ieee(x.as_bytes()).into())
         .collect::<Vec<Hash>>()
         .into();
 
