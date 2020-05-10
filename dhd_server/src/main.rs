@@ -37,7 +37,7 @@ fn main() {
     let schema_context = Arc::new(Context::new(pool));
 
     rocket::ignite()
-        .manage(schema_context.clone())
+        .manage(schema_context)
         .manage(schema.clone())
         .mount(
             "/",

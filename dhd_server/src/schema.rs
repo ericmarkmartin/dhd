@@ -1,5 +1,5 @@
 use super::redis::RedisPool;
-use dhd_core::hashlist::{Hash, HashList};
+use dhd_core::hashlist::HashList;
 use itertools::Itertools;
 use juniper::{FieldError, RootNode};
 use r2d2_redis::redis::Commands;
@@ -23,10 +23,10 @@ pub struct Query;
     Context = Context
 )]
 impl Query {
-    fn get_hashlist(context: &Context, id: String) -> Result<Vec<Hash>, FieldError> {
+    fn get_hashlist(context: &Context, id: String) -> Result<Vec<i32>, FieldError> {
         // TODO: Better mapping from Redis to client-facing GraphQL errors
         let mut conn = context.db.get()?;
-        let hashlist_str: String = conn.hget("hashlists", id.parse::<u32>()?)?;
+        let hashlist_str: String = conn.hget("hashlists", id.parse::<i64>()?)?;
 
         HashList::try_from(hashlist_str.as_str())
             .map(|hashlist| hashlist.into())

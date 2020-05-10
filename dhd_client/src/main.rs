@@ -1,10 +1,9 @@
+use anyhow::{anyhow, Context, Result};
 use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 use crc::crc32;
-use graphql_client::{GraphQLQuery, Response};
-use reqwest;
-use anyhow::{anyhow, Context, Result};
-use std::fs;
 use dhd_core::hashlist::{Hash, HashList};
+use graphql_client::{GraphQLQuery, Response};
+use std::fs;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -23,21 +22,18 @@ pub struct HashlistQuery;
 pub struct HashlistMutation;
 
 fn dhd_push(matches: &ArgMatches) -> Result<()> {
-    let server = matches
-        .value_of("server")
-        .context("no server specified")?;
+    let server = matches.value_of("server").context("no server specified")?;
     let url = format!("{}/graphql", server);
-    let filename = matches
-        .value_of("file")
-        .context("no filename provided")?;
+    let filename = matches.value_of("file").context("no filename provided")?;
     let contents = fs::read_to_string(filename)?;
     let lines = contents.split('\n');
     let hashlist: HashList = lines
         .map(|x| crc32::checksum_ieee(x.as_bytes()) as Hash)
-        .collect::<Vec<Hash>>().into();
+        .collect::<Vec<Hash>>()
+        .into();
 
-    let body = HashlistMutation::build_query(hashlist_mutation::Variables { 
-        hashlist: Vec::<i64>::from(hashlist)
+    let body = HashlistMutation::build_query(hashlist_mutation::Variables {
+        hashlist: Vec::<i64>::from(hashlist),
     });
     let client = reqwest::blocking::Client::new();
     let res = client.post(&url).json(&body).send()?;
@@ -50,13 +46,9 @@ fn dhd_push(matches: &ArgMatches) -> Result<()> {
 }
 
 fn dhd_pull(matches: &ArgMatches) -> Result<()> {
-    let server = matches
-        .value_of("server")
-        .context("no server specified")?;
+    let server = matches.value_of("server").context("no server specified")?;
     let url = format!("{}/graphql", server);
-    let id = matches
-        .value_of("id")
-        .context("no id specified")?;
+    let id = matches.value_of("id").context("no id specified")?;
 
     let body = HashlistQuery::build_query(hashlist_query::Variables {
         hashlist_id: id.to_string(),
@@ -65,11 +57,10 @@ fn dhd_pull(matches: &ArgMatches) -> Result<()> {
     let res = client.post(&url).json(&body).send()?;
 
     let response: Response<hashlist_query::ResponseData> = res.json()?;
-    println!("Response: {:?}", response);
     let data = response.data.context("bad response")?;
     let hashlist = data.get_hashlist;
     for hash in hashlist {
-        println!("{}", hash);
+        println!("{}", hash as u32);
     }
 
     Ok(())
