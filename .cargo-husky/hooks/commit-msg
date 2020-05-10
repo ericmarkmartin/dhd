@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+MESSAGE=`cat $1 | head -n1`
+if [[ $MESSAGE =~ ^Merge ]]; then
+  echo Commit is a merge: not checking message.
+elif [[ $MESSAGE =~ ^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\(.+\))?:\ .+$ ]]; then
+  echo Commit message \"$MESSAGE\" is conventional.
+else
+  echo Commit message \"$MESSAGE\" is not conventional.
+  echo Aborting commit.
+  exit 1
+fi
