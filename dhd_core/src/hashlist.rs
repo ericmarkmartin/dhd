@@ -19,7 +19,7 @@ impl TryFrom<&str> for HashList {
     type Error = <Hash as FromStr>::Err;
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
-        s.split("\n")
+        s.split('\n')
             .map(|s| s.parse::<Hash>())
             .collect::<Result<Vec<Hash>, _>>()
             .map(|hashes| hashes.into())
