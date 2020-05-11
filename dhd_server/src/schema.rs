@@ -1,4 +1,4 @@
-use super::redis::{RedisPool, HASHLIST_HASH_COUNTER_NAME, HASHLIST_HASH_NAME};
+use super::redis::{RedisPool, HASHLIST_HASH_NAME};
 use dhd_core::hashlist::{Hash, HashList};
 use juniper::{FieldError, FieldResult, RootNode};
 use r2d2_redis::redis::Commands;
@@ -45,7 +45,6 @@ impl Mutation {
         hashlist: HashList,
     ) -> Result<String, FieldError> {
         let mut conn = context.db.get()?;
-        conn.incr(HASHLIST_HASH_COUNTER_NAME, 1)?;
         conn.hset(
             HASHLIST_HASH_NAME,
             &username,

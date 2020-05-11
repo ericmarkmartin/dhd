@@ -5,7 +5,6 @@ use r2d2_redis::{
 };
 
 pub const HASHLIST_HASH_NAME: &str = "hashlists";
-pub const HASHLIST_HASH_COUNTER_NAME: &str = "hashlists_ctr";
 
 pub type RedisPool = Pool<RedisConnectionManager>;
 

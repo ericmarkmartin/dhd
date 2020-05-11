@@ -1,7 +1,6 @@
 #![feature(decl_macro, proc_macro_hygiene)]
 
 use rocket::{response::content, State};
-use std::sync::Arc;
 
 use dhd_server::{
     redis::init_pool,
@@ -15,18 +14,18 @@ fn graphiql() -> content::Html<String> {
 
 #[rocket::get("/graphql?<request>")]
 fn get_graphql_handler(
-    ctx: State<Arc<Context>>,
+    ctx: State<Context>,
     request: juniper_rocket::GraphQLRequest,
-    schema: State<Arc<Schema>>,
+    schema: State<Schema>,
 ) -> juniper_rocket::GraphQLResponse {
     request.execute(&schema, &ctx)
 }
 
 #[rocket::post("/graphql", data = "<request>")]
 fn post_graphql_handler(
-    ctx: State<Arc<Context>>,
+    ctx: State<Context>,
     request: juniper_rocket::GraphQLRequest,
-    schema: State<Arc<Schema>>,
+    schema: State<Schema>,
 ) -> juniper_rocket::GraphQLResponse {
     request.execute(&schema, &ctx)
 }
