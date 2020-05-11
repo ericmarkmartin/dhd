@@ -10,3 +10,4 @@ graphql = ["juniper"]
 [dependencies]
 juniper = { version = "0.14.2", optional = true }
 difference = "2.0.0"
+itertools = "0.9.0"

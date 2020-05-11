@@ -1,17 +1,35 @@
+use itertools::Itertools;
 use std::{convert::TryFrom, str::FromStr};
 
 pub type Hash = i32;
-pub struct HashList(Vec<Hash>);
+
+#[cfg_attr(feature = "graphql", derive(juniper::GraphQLInputObject))]
+pub struct HashList {
+    hashes: Vec<Hash>,
+}
+
+impl HashList {
+    pub fn new(hashes: Vec<Hash>) -> Self {
+        HashList { hashes }
+    }
+
+    pub fn to_delimited_string(&self) -> String {
+        self.hashes
+            .iter()
+            .map(|&n| (n as u32).to_string())
+            .join("\n")
+    }
+}
 
 impl From<Vec<Hash>> for HashList {
     fn from(hashes: Vec<Hash>) -> Self {
-        HashList(hashes)
+        HashList::new(hashes)
     }
 }
 
 impl From<HashList> for Vec<Hash> {
     fn from(hashlist: HashList) -> Self {
-        hashlist.0
+        hashlist.hashes
     }
 }
 
