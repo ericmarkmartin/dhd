@@ -23,6 +23,12 @@ impl From<Hash> for i64 {
     }
 }
 
+impl From<Hash> for u32 {
+    fn from(hash: Hash) -> Self {
+        hash.0 as u32
+    }
+}
+
 impl<T> From<HashList> for Vec<T>
 where
     T: From<Hash>,
@@ -38,8 +44,7 @@ where
 
 impl From<HashList> for Vec<i32> {
     fn from(hashlist: HashList) -> Self {
-        hashlist
-            .0.iter().map(|x: &Hash| x.0 as i32).collect()
+        hashlist.0.iter().map(|x: &Hash| x.0 as i32).collect()
     }
 }
 
@@ -51,12 +56,11 @@ impl FromStr for Hash {
     }
 }
 
-
 impl TryFrom<&str> for HashList {
     type Error = <Hash as FromStr>::Err;
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
-        s.split("\n")
+        s.split('\n')
             .map(|s| s.parse::<Hash>())
             .collect::<Result<Vec<Hash>, _>>()
             .map(|hashes| hashes.into())

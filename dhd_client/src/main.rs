@@ -1,25 +1,9 @@
 use anyhow::{anyhow, Context, Result};
 use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 use crc::crc32;
+use dhd_client::DhdClient;
 use dhd_core::hashlist::{Hash, HashList};
-use graphql_client::{GraphQLQuery, Response};
 use std::fs;
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/hashlist_schema.json",
-    query_path = "graphql/hashlist_query.graphql",
-    response_derives = "Debug"
-)]
-pub struct HashlistQuery;
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/hashlist_schema.json",
-    query_path = "graphql/hashlist_mutation.graphql",
-    response_derives = "Debug"
-)]
-pub struct HashlistMutation;
 
 fn dhd_push(matches: &ArgMatches) -> Result<()> {
     let server = matches.value_of("server").context("no server specified")?;
@@ -32,15 +16,9 @@ fn dhd_push(matches: &ArgMatches) -> Result<()> {
         .collect::<Vec<Hash>>()
         .into();
 
-    let body = HashlistMutation::build_query(hashlist_mutation::Variables {
-        hashlist: Vec::<i64>::from(hashlist),
-    });
-    let client = reqwest::blocking::Client::new();
-    let res = client.post(&url).json(&body).send()?;
-
-    let response: Response<hashlist_mutation::ResponseData> = res.json()?;
-    let data = response.data.context("bad response")?;
-    println!("Created hashlist #{}", data.create_hashlist);
+    let client = DhdClient::new(&url)?;
+    let id = client.push(hashlist)?;
+    println!("Created hash #{}!", id);
 
     Ok(())
 }
@@ -48,19 +26,17 @@ fn dhd_push(matches: &ArgMatches) -> Result<()> {
 fn dhd_pull(matches: &ArgMatches) -> Result<()> {
     let server = matches.value_of("server").context("no server specified")?;
     let url = format!("{}/graphql", server);
-    let id = matches.value_of("id").context("no id specified")?;
+    let id = matches
+        .value_of("id")
+        .context("no id specified")?
+        .parse::<u32>()
+        .context("invalid id")?;
 
-    let body = HashlistQuery::build_query(hashlist_query::Variables {
-        hashlist_id: id.to_string(),
-    });
-    let client = reqwest::blocking::Client::new();
-    let res = client.post(&url).json(&body).send()?;
+    let client = DhdClient::new(&url)?;
+    let hashlist = client.pull(id)?;
 
-    let response: Response<hashlist_query::ResponseData> = res.json()?;
-    let data = response.data.context("bad response")?;
-    let hashlist = data.get_hashlist;
-    for hash in hashlist {
-        println!("{}", hash as u32);
+    for hash in <Vec<u32>>::from(hashlist) {
+        println!("{}", hash);
     }
 
     Ok(())
