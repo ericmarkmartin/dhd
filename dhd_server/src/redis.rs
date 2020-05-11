@@ -4,6 +4,8 @@ use r2d2_redis::{
     RedisConnectionManager,
 };
 
+pub const HASHLIST_HASH_NAME: &str = "hashlists";
+
 pub type RedisPool = Pool<RedisConnectionManager>;
 
 pub fn init_pool() -> Result<RedisPool, r2d2::Error> {
