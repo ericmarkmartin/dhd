@@ -33,12 +33,12 @@ fn post_graphql_handler(
 
 fn main() {
     let pool = init_pool().unwrap();
-    let schema = Arc::new(create_schema());
-    let schema_context = Arc::new(Context::new(pool));
+    let schema_context = Context::new(pool);
+    let schema = create_schema();
 
     rocket::ignite()
-        .manage(schema_context.clone())
-        .manage(schema.clone())
+        .manage(schema_context)
+        .manage(schema)
         .mount(
             "/",
             rocket::routes![graphiql, get_graphql_handler, post_graphql_handler],
