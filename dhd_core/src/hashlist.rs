@@ -33,12 +33,18 @@ impl From<HashList> for Vec<Hash> {
     }
 }
 
+impl From<HashList> for Vec<i64> {
+    fn from(hashlist: HashList) -> Self {
+        hashlist.hashes.iter().map(|x| i64::from(*x)).collect()
+    }
+}
+
 impl TryFrom<&str> for HashList {
     type Error = <Hash as FromStr>::Err;
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         s.split('\n')
-            .map(|s| s.parse::<Hash>())
+            .map(|s| s.parse::<u32>().map(|x| x as Hash))
             .collect::<Result<Vec<Hash>, _>>()
             .map(|hashes| hashes.into())
     }

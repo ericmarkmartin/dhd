@@ -1,0 +1,3 @@
+mutation HashlistMutation($username: String!, $hashlist:HashList!) {
+  commitHashlist(username:$username, hashlist:$hashlist)
+}
