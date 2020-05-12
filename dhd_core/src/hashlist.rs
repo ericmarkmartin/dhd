@@ -1,58 +1,35 @@
+use itertools::Itertools;
 use std::{convert::TryFrom, str::FromStr};
 
-#[derive(Copy, Clone)]
-pub struct Hash(u32);
+pub type Hash = i32;
 
-pub struct HashList(Vec<Hash>);
+#[cfg_attr(feature = "graphql", derive(juniper::GraphQLInputObject))]
+pub struct HashList {
+    hashes: Vec<Hash>,
+}
+
+impl HashList {
+    pub fn new(hashes: Vec<Hash>) -> Self {
+        HashList { hashes }
+    }
+
+    pub fn to_delimited_string(&self) -> String {
+        self.hashes
+            .iter()
+            .map(|&n| (n as u32).to_string())
+            .join("\n")
+    }
+}
 
 impl From<Vec<Hash>> for HashList {
     fn from(hashes: Vec<Hash>) -> Self {
-        HashList(hashes)
+        HashList::new(hashes)
     }
 }
 
-impl From<u32> for Hash {
-    fn from(u: u32) -> Self {
-        Hash(u)
-    }
-}
-
-impl From<Hash> for i64 {
-    fn from(hash: Hash) -> Self {
-        hash.0 as i64
-    }
-}
-
-impl From<Hash> for u32 {
-    fn from(hash: Hash) -> Self {
-        hash.0 as u32
-    }
-}
-
-impl<T> From<HashList> for Vec<T>
-where
-    T: From<Hash>,
-{
+impl From<HashList> for Vec<Hash> {
     fn from(hashlist: HashList) -> Self {
-        hashlist
-            .0
-            .iter()
-            .map(|x: &Hash| T::from(*x))
-            .collect::<Vec<T>>()
-    }
-}
-
-impl From<HashList> for Vec<i32> {
-    fn from(hashlist: HashList) -> Self {
-        hashlist.0.iter().map(|x: &Hash| x.0 as i32).collect()
-    }
-}
-
-impl FromStr for Hash {
-    type Err = <u32 as FromStr>::Err;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        u32::from_str(s).map(Hash::from)
+        hashlist.hashes
     }
 }
 

@@ -1,13 +1,13 @@
 use difference::Difference;
 
-#[derive(juniper::GraphQLEnum)]
+#[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
 pub enum DiffType {
     Same,
     Add,
     Rem,
 }
 
-#[derive(juniper::GraphQLObject)]
+#[cfg_attr(feature = "graphql", derive(juniper::GraphQLObject))]
 pub struct Diff {
     diff_type: DiffType,
     data: String,

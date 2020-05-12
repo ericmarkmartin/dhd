@@ -1,7 +1,6 @@
-use super::redis::RedisPool;
-use dhd_core::hashlist::HashList;
-use itertools::Itertools;
-use juniper::{FieldError, RootNode};
+use super::redis::{RedisPool, HASHLIST_HASH_NAME};
+use dhd_core::hashlist::{Hash, HashList};
+use juniper::{FieldError, FieldResult, RootNode};
 use r2d2_redis::redis::Commands;
 use std::convert::TryFrom;
 
@@ -23,10 +22,10 @@ pub struct Query;
     Context = Context
 )]
 impl Query {
-    fn get_hashlist(context: &Context, id: String) -> Result<Vec<i32>, FieldError> {
+    fn get_hashlist(context: &Context, username: String) -> FieldResult<Vec<Hash>> {
         // TODO: Better mapping from Redis to client-facing GraphQL errors
         let mut conn = context.db.get()?;
-        let hashlist_str: String = conn.hget("hashlists", id.parse::<i64>()?)?;
+        let hashlist_str: String = conn.hget("hashlists", username)?;
 
         HashList::try_from(hashlist_str.as_str())
             .map(|hashlist| hashlist.into())
@@ -40,12 +39,18 @@ pub struct Mutation;
     Context = Context
 )]
 impl Mutation {
-    fn create_hashlist(context: &Context, hashlist: Vec<i32>) -> Result<String, FieldError> {
+    fn commit_hashlist(
+        context: &Context,
+        username: String,
+        hashlist: HashList,
+    ) -> Result<String, FieldError> {
         let mut conn = context.db.get()?;
-        let s = hashlist.iter().map(|&n| (n as u32).to_string()).join("\n");
-        let ctr: u32 = conn.incr::<_, _, u32>("hashlist_ctr", 1)? - 1;
-        conn.hset("hashlists", ctr, s)?;
-        Ok(ctr.to_string())
+        conn.hset(
+            HASHLIST_HASH_NAME,
+            &username,
+            hashlist.to_delimited_string(),
+        )?;
+        Ok(username)
     }
 }
 

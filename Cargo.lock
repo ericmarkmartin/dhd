@@ -264,6 +264,7 @@ name = "dhd_core"
 version = "0.1.0"
 dependencies = [
  "difference",
+ "itertools",
  "juniper",
 ]
 
