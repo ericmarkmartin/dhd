@@ -47,7 +47,7 @@ impl DhdClient {
     pub fn push(&self, hashlist: HashList) -> DhdClientResult<u32> {
         let processed_list: Vec<i64> = Vec::<Hash>::from(hashlist)
             .iter()
-            .map(|x| u32::from(*x) as i32 as i64)
+            .map(|x| *x as i64)
             .collect();
         let body = HashlistMutation::build_query(hashlist_mutation::Variables {
             hashlist: processed_list,
@@ -76,7 +76,7 @@ impl DhdClient {
             Ok(data
                 .get_hashlist
                 .iter()
-                .map(|x| Hash::from(*x as u32))
+                .map(|x| Hash::from(*x as i32))
                 .collect::<Vec<Hash>>()
                 .into())
         } else {

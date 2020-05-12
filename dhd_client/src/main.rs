@@ -12,7 +12,7 @@ fn dhd_push(matches: &ArgMatches) -> Result<()> {
     let contents = fs::read_to_string(filename)?;
     let lines = contents.split('\n');
     let hashlist: HashList = lines
-        .map(|x| crc32::checksum_ieee(x.as_bytes()).into())
+        .map(|x| crc32::checksum_ieee(x.as_bytes()) as Hash)
         .collect::<Vec<Hash>>()
         .into();
 
@@ -35,8 +35,8 @@ fn dhd_pull(matches: &ArgMatches) -> Result<()> {
     let client = DhdClient::new(&url)?;
     let hashlist = client.pull(id)?;
 
-    for hash in <Vec<u32>>::from(hashlist) {
-        println!("{}", hash);
+    for hash in <Vec<i32>>::from(hashlist) {
+        println!("{}", hash as u32);
     }
 
     Ok(())
