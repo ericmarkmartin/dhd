@@ -3,18 +3,30 @@ use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 use crc::crc32;
 use dhd_client::client::DhdClient;
 use dhd_core::hashlist::{Hash, HashList};
-use std::fs;
+use std::fs::{self, File};
+use std::io::{self, Read, Write};
+
+fn read_input(filename: Option<&str>) -> Result<String> {
+    let contents = if let Some(filename) = filename {
+        fs::read_to_string(filename)?
+    } else {
+        let mut buffer = String::new();
+        io::stdin().read_to_string(&mut buffer)?;
+        buffer
+    };
+    Ok(contents)
+}
 
 fn dhd_push(matches: &ArgMatches) -> Result<()> {
     let server = matches.value_of("server").context("no server specified")?;
     let url = format!("{}/graphql", server);
-    let filename = matches.value_of("file").context("no filename provided")?;
+    let filename = matches.value_of("input");
     let username = matches
         .value_of("username")
         .context("no username provided")?;
-    let contents = fs::read_to_string(filename)?;
-    let lines = contents.split('\n');
-    let hashlist: HashList = lines
+    let contents = read_input(filename).context("could not read input")?;
+    let hashlist: HashList = contents
+        .split('\n')
         .map(|x| crc32::checksum_ieee(x.as_bytes()) as Hash)
         .collect::<Vec<Hash>>()
         .into();
@@ -26,19 +38,30 @@ fn dhd_push(matches: &ArgMatches) -> Result<()> {
     Ok(())
 }
 
+fn write_output(filename: Option<&str>, contents: String) -> Result<()> {
+    if let Some(filename) = filename {
+        let mut file = File::create(filename)?;
+        file.write_all(contents.as_bytes())?;
+        file.sync_all()?;
+    } else {
+        io::stdout().write_all(contents.as_bytes())?;
+        io::stdout().write_all(b"\n")?;
+    };
+    Ok(())
+}
+
 fn dhd_pull(matches: &ArgMatches) -> Result<()> {
     let server = matches.value_of("server").context("no server specified")?;
     let url = format!("{}/graphql", server);
+    let filename = matches.value_of("output");
     let username = matches
         .value_of("username")
         .context("no username provided")?;
 
     let client = DhdClient::new(&url)?;
     let hashlist = client.pull(username)?;
-
-    for hash in <Vec<i32>>::from(hashlist) {
-        println!("{}", hash as u32);
-    }
+    let contents = hashlist.to_delimited_string();
+    write_output(filename, contents)?;
 
     Ok(())
 }
@@ -52,11 +75,11 @@ fn main() -> Result<()> {
             SubCommand::with_name("push")
                 .about("Push a line hash of a local file.")
                 .arg(
-                    Arg::with_name("file")
-                        .short("f")
-                        .value_name("FILE")
+                    Arg::with_name("input")
+                        .short("i")
+                        .value_name("INPUT")
                         .help("Sets the input file.")
-                        .required(true)
+                        .required(false)
                         .index(1),
                 )
                 .arg(
@@ -94,6 +117,13 @@ fn main() -> Result<()> {
                         .help("The DHD server to use.")
                         .env("DHD_SERVER")
                         .required(true),
+                )
+                .arg(
+                    Arg::with_name("output")
+                        .short("o")
+                        .value_name("OUTPUT")
+                        .help("Sets the output file.")
+                        .required(false),
                 ),
         )
         .get_matches();
