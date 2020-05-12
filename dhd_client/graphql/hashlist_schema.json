@@ -189,7 +189,7 @@
                 {
                   "defaultValue": null,
                   "description": null,
-                  "name": "id",
+                  "name": "username",
                   "type": {
                     "kind": "NON_NULL",
                     "name": null,
@@ -238,6 +238,95 @@
           "interfaces": null,
           "kind": "SCALAR",
           "name": "String",
+          "possibleTypes": null
+        },
+        {
+          "description": null,
+          "enumValues": null,
+          "fields": null,
+          "inputFields": [
+            {
+              "defaultValue": null,
+              "description": null,
+              "name": "hashes",
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "Int",
+                      "ofType": null
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "interfaces": null,
+          "kind": "INPUT_OBJECT",
+          "name": "HashList",
+          "possibleTypes": null
+        },
+        {
+          "description": null,
+          "enumValues": null,
+          "fields": [
+            {
+              "args": [
+                {
+                  "defaultValue": null,
+                  "description": null,
+                  "name": "username",
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "String",
+                      "ofType": null
+                    }
+                  }
+                },
+                {
+                  "defaultValue": null,
+                  "description": null,
+                  "name": "hashlist",
+                  "type": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "INPUT_OBJECT",
+                      "name": "HashList",
+                      "ofType": null
+                    }
+                  }
+                }
+              ],
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "commitHashlist",
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              }
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "kind": "OBJECT",
+          "name": "Mutation",
           "possibleTypes": null
         },
         {
@@ -352,56 +441,6 @@
           "enumValues": null,
           "fields": [
             {
-              "args": [
-                {
-                  "defaultValue": null,
-                  "description": null,
-                  "name": "hashlist",
-                  "type": {
-                    "kind": "NON_NULL",
-                    "name": null,
-                    "ofType": {
-                      "kind": "LIST",
-                      "name": null,
-                      "ofType": {
-                        "kind": "NON_NULL",
-                        "name": null,
-                        "ofType": {
-                          "kind": "SCALAR",
-                          "name": "Int",
-                          "ofType": null
-                        }
-                      }
-                    }
-                  }
-                }
-              ],
-              "deprecationReason": null,
-              "description": null,
-              "isDeprecated": false,
-              "name": "createHashlist",
-              "type": {
-                "kind": "NON_NULL",
-                "name": null,
-                "ofType": {
-                  "kind": "SCALAR",
-                  "name": "String",
-                  "ofType": null
-                }
-              }
-            }
-          ],
-          "inputFields": null,
-          "interfaces": [],
-          "kind": "OBJECT",
-          "name": "Mutation",
-          "possibleTypes": null
-        },
-        {
-          "description": null,
-          "enumValues": null,
-          "fields": [
-            {
               "args": [],
               "deprecationReason": null,
               "description": null,
@@ -462,6 +501,65 @@
           "interfaces": [],
           "kind": "OBJECT",
           "name": "__InputValue",
+          "possibleTypes": null
+        },
+        {
+          "description": "GraphQL type kind\n\nThe GraphQL specification defines a number of type kinds - the meta type of a type.",
+          "enumValues": [
+            {
+              "deprecationReason": null,
+              "description": "## Scalar types\n\nScalar types appear as the leaf nodes of GraphQL queries. Strings, numbers, and booleans are the built in types, and while it's possible to define your own, it's relatively uncommon.",
+              "isDeprecated": false,
+              "name": "SCALAR"
+            },
+            {
+              "deprecationReason": null,
+              "description": "## Object types\n\nThe most common type to be implemented by users. Objects have fields and can implement interfaces.",
+              "isDeprecated": false,
+              "name": "OBJECT"
+            },
+            {
+              "deprecationReason": null,
+              "description": "## Interface types\n\nInterface types are used to represent overlapping fields between multiple types, and can be queried for their concrete type.",
+              "isDeprecated": false,
+              "name": "INTERFACE"
+            },
+            {
+              "deprecationReason": null,
+              "description": "## Union types\n\nUnions are similar to interfaces but can not contain any fields on their own.",
+              "isDeprecated": false,
+              "name": "UNION"
+            },
+            {
+              "deprecationReason": null,
+              "description": "## Enum types\n\nLike scalars, enum types appear as the leaf nodes of GraphQL queries.",
+              "isDeprecated": false,
+              "name": "ENUM"
+            },
+            {
+              "deprecationReason": null,
+              "description": "## Input objects\n\nRepresents complex values provided in queries _into_ the system.",
+              "isDeprecated": false,
+              "name": "INPUT_OBJECT"
+            },
+            {
+              "deprecationReason": null,
+              "description": "## List types\n\nRepresent lists of other types. This library provides implementations for vectors and slices, but other Rust types can be extended to serve as GraphQL lists.",
+              "isDeprecated": false,
+              "name": "LIST"
+            },
+            {
+              "deprecationReason": null,
+              "description": "## Non-null types\n\nIn GraphQL, nullable types are the default. By putting a `!` after a type, it becomes non-nullable.",
+              "isDeprecated": false,
+              "name": "NON_NULL"
+            }
+          ],
+          "fields": null,
+          "inputFields": null,
+          "interfaces": null,
+          "kind": "ENUM",
+          "name": "__TypeKind",
           "possibleTypes": null
         },
         {
@@ -529,118 +627,6 @@
           "interfaces": [],
           "kind": "OBJECT",
           "name": "__EnumValue",
-          "possibleTypes": null
-        },
-        {
-          "description": "GraphQL type kind\n\nThe GraphQL specification defines a number of type kinds - the meta type of a type.",
-          "enumValues": [
-            {
-              "deprecationReason": null,
-              "description": "## Scalar types\n\nScalar types appear as the leaf nodes of GraphQL queries. Strings, numbers, and booleans are the built in types, and while it's possible to define your own, it's relatively uncommon.",
-              "isDeprecated": false,
-              "name": "SCALAR"
-            },
-            {
-              "deprecationReason": null,
-              "description": "## Object types\n\nThe most common type to be implemented by users. Objects have fields and can implement interfaces.",
-              "isDeprecated": false,
-              "name": "OBJECT"
-            },
-            {
-              "deprecationReason": null,
-              "description": "## Interface types\n\nInterface types are used to represent overlapping fields between multiple types, and can be queried for their concrete type.",
-              "isDeprecated": false,
-              "name": "INTERFACE"
-            },
-            {
-              "deprecationReason": null,
-              "description": "## Union types\n\nUnions are similar to interfaces but can not contain any fields on their own.",
-              "isDeprecated": false,
-              "name": "UNION"
-            },
-            {
-              "deprecationReason": null,
-              "description": "## Enum types\n\nLike scalars, enum types appear as the leaf nodes of GraphQL queries.",
-              "isDeprecated": false,
-              "name": "ENUM"
-            },
-            {
-              "deprecationReason": null,
-              "description": "## Input objects\n\nRepresents complex values provided in queries _into_ the system.",
-              "isDeprecated": false,
-              "name": "INPUT_OBJECT"
-            },
-            {
-              "deprecationReason": null,
-              "description": "## List types\n\nRepresent lists of other types. This library provides implementations for vectors and slices, but other Rust types can be extended to serve as GraphQL lists.",
-              "isDeprecated": false,
-              "name": "LIST"
-            },
-            {
-              "deprecationReason": null,
-              "description": "## Non-null types\n\nIn GraphQL, nullable types are the default. By putting a `!` after a type, it becomes non-nullable.",
-              "isDeprecated": false,
-              "name": "NON_NULL"
-            }
-          ],
-          "fields": null,
-          "inputFields": null,
-          "interfaces": null,
-          "kind": "ENUM",
-          "name": "__TypeKind",
-          "possibleTypes": null
-        },
-        {
-          "description": null,
-          "enumValues": [
-            {
-              "deprecationReason": null,
-              "description": null,
-              "isDeprecated": false,
-              "name": "QUERY"
-            },
-            {
-              "deprecationReason": null,
-              "description": null,
-              "isDeprecated": false,
-              "name": "MUTATION"
-            },
-            {
-              "deprecationReason": null,
-              "description": null,
-              "isDeprecated": false,
-              "name": "SUBSCRIPTION"
-            },
-            {
-              "deprecationReason": null,
-              "description": null,
-              "isDeprecated": false,
-              "name": "FIELD"
-            },
-            {
-              "deprecationReason": null,
-              "description": null,
-              "isDeprecated": false,
-              "name": "FRAGMENT_DEFINITION"
-            },
-            {
-              "deprecationReason": null,
-              "description": null,
-              "isDeprecated": false,
-              "name": "FRAGMENT_SPREAD"
-            },
-            {
-              "deprecationReason": null,
-              "description": null,
-              "isDeprecated": false,
-              "name": "INLINE_FRAGMENT"
-            }
-          ],
-          "fields": null,
-          "inputFields": null,
-          "interfaces": null,
-          "kind": "ENUM",
-          "name": "__DirectiveLocation",
           "possibleTypes": null
         },
         {
@@ -961,6 +947,59 @@
           "interfaces": [],
           "kind": "OBJECT",
           "name": "__Directive",
+          "possibleTypes": null
+        },
+        {
+          "description": null,
+          "enumValues": [
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "QUERY"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "MUTATION"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "SUBSCRIPTION"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "FIELD"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "FRAGMENT_DEFINITION"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "FRAGMENT_SPREAD"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "INLINE_FRAGMENT"
+            }
+          ],
+          "fields": null,
+          "inputFields": null,
+          "interfaces": null,
+          "kind": "ENUM",
+          "name": "__DirectiveLocation",
           "possibleTypes": null
         }
       ]

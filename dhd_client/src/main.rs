@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Context, Result};
 use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 use crc::crc32;
-use dhd_client::DhdClient;
+use dhd_client::client::DhdClient;
 use dhd_core::hashlist::{Hash, HashList};
 use std::fs;
 
@@ -9,6 +9,9 @@ fn dhd_push(matches: &ArgMatches) -> Result<()> {
     let server = matches.value_of("server").context("no server specified")?;
     let url = format!("{}/graphql", server);
     let filename = matches.value_of("file").context("no filename provided")?;
+    let username = matches
+        .value_of("username")
+        .context("no username provided")?;
     let contents = fs::read_to_string(filename)?;
     let lines = contents.split('\n');
     let hashlist: HashList = lines
@@ -17,8 +20,8 @@ fn dhd_push(matches: &ArgMatches) -> Result<()> {
         .into();
 
     let client = DhdClient::new(&url)?;
-    let id = client.push(hashlist)?;
-    println!("Created hash #{}!", id);
+    let id = client.push(username, hashlist)?;
+    println!("Created hash '{}'!", id);
 
     Ok(())
 }
@@ -26,14 +29,12 @@ fn dhd_push(matches: &ArgMatches) -> Result<()> {
 fn dhd_pull(matches: &ArgMatches) -> Result<()> {
     let server = matches.value_of("server").context("no server specified")?;
     let url = format!("{}/graphql", server);
-    let id = matches
-        .value_of("id")
-        .context("no id specified")?
-        .parse::<u32>()
-        .context("invalid id")?;
+    let username = matches
+        .value_of("username")
+        .context("no username provided")?;
 
     let client = DhdClient::new(&url)?;
-    let hashlist = client.pull(id)?;
+    let hashlist = client.pull(username)?;
 
     for hash in <Vec<i32>>::from(hashlist) {
         println!("{}", hash as u32);
@@ -65,15 +66,23 @@ fn main() -> Result<()> {
                         .help("The DHD server to use.")
                         .required(false)
                         .default_value("http://localhost:8000"),
+                )
+                .arg(
+                    Arg::with_name("username")
+                        .short("u")
+                        .value_name("USER")
+                        .help("The username to save the hash under.")
+                        .required(true),
                 ),
         )
         .subcommand(
             SubCommand::with_name("pull")
                 .about("Pull a line hash from the server.")
                 .arg(
-                    Arg::with_name("id")
-                        .value_name("ID")
-                        .help("Sets the ID of the hash to fetch.")
+                    Arg::with_name("username")
+                        .short("u")
+                        .value_name("USER")
+                        .help("The username to save the hash under.")
                         .required(true)
                         .index(1),
                 )

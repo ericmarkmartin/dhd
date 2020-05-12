@@ -1,3 +1,3 @@
-query HashlistQuery($hashlist_id: String!){
-  getHashlist(id:$hashlist_id)
+query HashlistQuery($username: String!){
+  getHashlist(username: $username)
 }
