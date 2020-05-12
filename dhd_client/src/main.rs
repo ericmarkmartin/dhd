@@ -77,6 +77,7 @@ fn main() -> Result<()> {
                 .arg(
                     Arg::with_name("input")
                         .short("i")
+                        .long("input")
                         .value_name("INPUT")
                         .help("Sets the input file.")
                         .required(false)
@@ -85,6 +86,7 @@ fn main() -> Result<()> {
                 .arg(
                     Arg::with_name("server")
                         .short("s")
+                        .long("server")
                         .value_name("URL")
                         .help("The DHD server to use.")
                         .env("DHD_SERVER")
@@ -93,6 +95,7 @@ fn main() -> Result<()> {
                 .arg(
                     Arg::with_name("username")
                         .short("u")
+                        .long("username")
                         .value_name("USERNAME")
                         .help("The username to save the hash under.")
                         .env("DHD_USERNAME")
@@ -105,6 +108,7 @@ fn main() -> Result<()> {
                 .arg(
                     Arg::with_name("username")
                         .short("u")
+                        .long("username")
                         .value_name("USERNAME")
                         .help("The username of the hash to download.")
                         .required(true)
@@ -113,6 +117,7 @@ fn main() -> Result<()> {
                 .arg(
                     Arg::with_name("server")
                         .short("s")
+                        .long("server")
                         .value_name("URL")
                         .help("The DHD server to use.")
                         .env("DHD_SERVER")
@@ -121,6 +126,7 @@ fn main() -> Result<()> {
                 .arg(
                     Arg::with_name("output")
                         .short("o")
+                        .long("output")
                         .value_name("OUTPUT")
                         .help("Sets the output file.")
                         .required(false),
