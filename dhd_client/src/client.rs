@@ -8,9 +8,9 @@ use url::{self, Url};
 
 #[derive(Error, Debug)]
 pub enum DhdClientError {
-    #[error("URL Parse Error: {0}")]
+    #[error("URL Parse Error")]
     UrlError(#[from] url::ParseError),
-    #[error("Network Error: {0}")]
+    #[error("Network Error")]
     RequestError(#[from] reqwest::Error),
     #[error("Query Error: {0}")]
     QueryError(String),

@@ -64,14 +64,15 @@ fn main() -> Result<()> {
                         .short("s")
                         .value_name("URL")
                         .help("The DHD server to use.")
-                        .required(false)
-                        .default_value("http://localhost:8000"),
+                        .env("DHD_SERVER")
+                        .required(true),
                 )
                 .arg(
                     Arg::with_name("username")
                         .short("u")
-                        .value_name("USER")
+                        .value_name("USERNAME")
                         .help("The username to save the hash under.")
+                        .env("DHD_USERNAME")
                         .required(true),
                 ),
         )
@@ -81,8 +82,8 @@ fn main() -> Result<()> {
                 .arg(
                     Arg::with_name("username")
                         .short("u")
-                        .value_name("USER")
-                        .help("The username to save the hash under.")
+                        .value_name("USERNAME")
+                        .help("The username of the hash to download.")
                         .required(true)
                         .index(1),
                 )
@@ -91,8 +92,8 @@ fn main() -> Result<()> {
                         .short("s")
                         .value_name("URL")
                         .help("The DHD server to use.")
-                        .required(false)
-                        .default_value("http://localhost:8000"),
+                        .env("DHD_SERVER")
+                        .required(true),
                 ),
         )
         .get_matches();
