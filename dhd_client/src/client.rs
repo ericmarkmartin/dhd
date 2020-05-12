@@ -43,16 +43,14 @@ impl DhdClient {
         let response: Response<hashlist_mutation::ResponseData> = res.json()?;
         if let Some(data) = response.data {
             Ok(data.commit_hashlist)
-        } else {
-            if let Some(errors) = response.errors {
-                if errors.len() == 0 {
-                    Err(DhdClientError::UnknownError)
-                } else {
-                    Err(DhdClientError::QueryError(errors[0].message.clone()))
-                }
-            } else {
+        } else if let Some(errors) = response.errors {
+            if errors.is_empty() {
                 Err(DhdClientError::UnknownError)
+            } else {
+                Err(DhdClientError::QueryError(errors[0].message.clone()))
             }
+        } else {
+            Err(DhdClientError::UnknownError)
         }
     }
 
@@ -71,16 +69,14 @@ impl DhdClient {
                 .map(|x| *x as Hash)
                 .collect::<Vec<Hash>>()
                 .into())
-        } else {
-            if let Some(errors) = response.errors {
-                if errors.len() == 0 {
-                    Err(DhdClientError::UnknownError)
-                } else {
-                    Err(DhdClientError::QueryError(errors[0].message.clone()))
-                }
-            } else {
+        } else if let Some(errors) = response.errors {
+            if errors.is_empty() {
                 Err(DhdClientError::UnknownError)
+            } else {
+                Err(DhdClientError::QueryError(errors[0].message.clone()))
             }
+        } else {
+            Err(DhdClientError::UnknownError)
         }
     }
 }

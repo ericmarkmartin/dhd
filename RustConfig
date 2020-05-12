@@ -1,0 +1,1 @@
+RUST_CARGO_BUILD_FLAGS="-p dhd_server --release --locked"
